@@ -22,12 +22,13 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/Development/apache-tomcat-7.0.39/lib/servlet-api.jar!/" />
+          <root url="jar://C:/No Install Programs/apache-tomcat-7.0.39/lib/servlet-api.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="libs" level="project" />
   </component>
 </module>
 

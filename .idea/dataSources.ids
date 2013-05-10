@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><component name="dataSourceStorage">
+  <data-source source="LOCAL" name="Data Source" product="MySQL" version="5.5.29-0ubuntu0.12.04.1" jdbc-version="4.0" driver-name="MySQL-AB JDBC Driver" driver-version="mysql-connector-java-5.1.22 ( Revision: ${bzr.revision-id} )" uuid="d74cde8b-f489-4166-a4d9-84d33e3f15e0">
+    <extra-name-characters>#@</extra-name-characters>
+    <identifier-quote-string>`</identifier-quote-string>
+    <synchronize>true</synchronize>
+    <jdbc-driver>com.mysql.jdbc.Driver</jdbc-driver>
+    <jdbc-url>jdbc:mysql://89.253.85.33/test</jdbc-url>
+    <user-name>root</user-name>
+    <user-password>df9bdf98df99df9cdf9fdf9edf9ddf92df93</user-password>
+    <schema-pattern>test.*</schema-pattern>
+    <default-schemas>Hyperactivity.* test.*</default-schemas>
+    <libraries>
+      <library>
+        <url>jar://$PROJECT_DIR$/libs/mysql-connector-java-5.1.22-bin.jar!/</url>
+      </library>
+      <library>
+        <url>file://$PROJECT_DIR$/libs/mysql-connector-license.txt</url>
+      </library>
+    </libraries>
+    <schema name="" catalog="test" />
+    <table name="orders" schema="" catalog="test" type="TABLE">
+      <column name="id" sqlType="INT" length="10" precision="0" nullable="false" jdbcType="4" autoIncrement="true" />
+      <column name="security" sqlType="VARCHAR" length="64" precision="0" nullable="true" jdbcType="12" />
+      <column name="type" sqlType="VARCHAR" length="64" precision="0" nullable="true" jdbcType="12" />
+      <column name="price" sqlType="FLOAT" length="12" precision="0" nullable="true" jdbcType="7" />
+      <column name="amount" sqlType="INT" length="10" precision="0" nullable="true" jdbcType="4" />
+      <column name="customer" sqlType="VARCHAR" length="64" precision="0" nullable="true" jdbcType="12" />
+      <primary-key name="PRIMARY" columns="id" />
+      <foreign-key name="orders_ibfk_1" columns="security" ref-table="securities" ref-schema="" ref-catalog="test" ref-columns="name" update-rule="3" delete-rule="3" deferrability="2" />
+    </table>
+    <table name="securities" schema="" catalog="test" type="TABLE">
+      <column name="name" sqlType="VARCHAR" length="64" precision="0" nullable="false" jdbcType="12" def="Jyc=" />
+      <primary-key name="PRIMARY" columns="name" />
+      <exported-key name="orders_ibfk_1" table="orders" schema="" catalog="test" columns="security" />
+      <exported-key name="trades_ibfk_1" table="trades" schema="" catalog="test" columns="security" />
+    </table>
+    <table name="trades" schema="" catalog="test" type="TABLE">
+      <column name="id" sqlType="INT" length="10" precision="0" nullable="false" jdbcType="4" autoIncrement="true" />
+      <column name="security" sqlType="VARCHAR" length="64" precision="0" nullable="true" jdbcType="12" />
+      <column name="price" sqlType="FLOAT" length="12" precision="0" nullable="true" jdbcType="7" />
+      <column name="amount" sqlType="INT" length="10" precision="0" nullable="true" jdbcType="4" />
+      <column name="dt" sqlType="DATETIME" length="19" precision="0" nullable="true" jdbcType="93" />
+      <column name="buyer" sqlType="VARCHAR" length="64" precision="0" nullable="true" jdbcType="12" />
+      <column name="seller" sqlType="VARCHAR" length="64" precision="0" nullable="true" jdbcType="12" />
+      <primary-key name="PRIMARY" columns="id" />
+      <foreign-key name="trades_ibfk_1" columns="security" ref-table="securities" ref-schema="" ref-catalog="test" ref-columns="name" update-rule="3" delete-rule="3" deferrability="2" />
+    </table>
+  </data-source>
+</component>
