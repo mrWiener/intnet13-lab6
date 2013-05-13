@@ -4,7 +4,6 @@ package controllers;
 import models.Order;
 import models.Security;
 import models.Trade;
-import sun.org.mozilla.javascript.internal.ast.NewExpression;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -12,7 +11,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,13 +42,11 @@ public class Market extends HttpServlet {
         String error = "";
 
         try {
-            String message = "";
             Map<String, String> p;
             p = checkAndConvertParameters(request.getParameterMap());
 
             String action = p.get("action");
 
-            request.setAttribute("securities", getSecurities());
 
             if (action == null) {
             } else if (action.equals("addSecurity")) {
@@ -59,10 +55,9 @@ public class Market extends HttpServlet {
                 addOrder(new Order(Integer.parseInt(p.get("amount")), Double.parseDouble(p.get("price")), p.get("buyOrSell"), p.get("security"), p.get("customer")));
             } else if (action.equals("viewTrades")) {
                 trades = viewTrades(p.get("security"));
-            } else{
+            } else {
                 throw new Exception("Request error: Unknown action: " + action);
             }
-
 
         } catch (Exception e) {
             error = e.toString();
@@ -72,11 +67,15 @@ public class Market extends HttpServlet {
             request.setAttribute("error", error);
 
             try {
+                request.setAttribute("securities", getSecurities());
+
                 getServletConfig().getServletContext().getRequestDispatcher(
                         "/market.jsp").forward(request, response);
             } catch (ServletException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            } catch (SQLException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
 
@@ -119,6 +118,8 @@ public class Market extends HttpServlet {
     }
 
     private void persistOrder(Order order) throws SQLException {
+        assert order.getAmount() > 0;
+        assert order.getPrice() >= 0;
         ps = connection.prepareStatement("INSERT INTO orders(security, type, price, amount, customer) VALUES(?,?,?,?,?)");
         ps.setString(1, order.getSecurity());
         ps.setString(2, order.getBuyOrSell());
@@ -129,20 +130,20 @@ public class Market extends HttpServlet {
         ps.executeUpdate();
     }
 
-    private Trade createTrade(Order order1, Order order2) {
-        String security = order1.getSecurity();
-        Double price = order1.getPrice();
-        int amount = order1.getAmount();
+    private Trade createTrade(Order order, Order matchingorder) {
+        String security = order.getSecurity();
+        Double price = order.getPrice();
+        int amount = matchingorder.getAmount();
         Timestamp currentTime = getCurrentTime();
         String buyer;
         String seller;
-        if (order1.getBuyOrSell().equals("b")) {
-            buyer = order1.getCustomer();
-            seller = order2.getCustomer();
+        if (order.getBuyOrSell().equals("b")) {
+            buyer = order.getCustomer();
+            seller = matchingorder.getCustomer();
 
         } else {
-            buyer = order2.getCustomer();
-            seller = order1.getCustomer();
+            buyer = matchingorder.getCustomer();
+            seller = order.getCustomer();
         }
         return new Trade(security, price, amount, currentTime, buyer, seller);
     }
@@ -160,17 +161,27 @@ public class Market extends HttpServlet {
     }
 
     private Order getAndRemoveMatchingOrder(Order order) throws SQLException {
-        ps = connection.prepareStatement("SELECT * FROM orders WHERE (security =? AND type =? AND price =? AND amount =?)", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+        ps = connection.prepareStatement("SELECT * FROM orders WHERE (security =? AND type =? AND price =?)", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
         ps.setString(1, order.getSecurity());
         ps.setString(2, getOppositeType(order.getBuyOrSell()));
         ps.setDouble(3, order.getPrice());
-        ps.setInt(4, order.getAmount());
 
         ResultSet rs = ps.executeQuery();
         Order matchingOrder = null;
         if (rs.next()) {
             matchingOrder = new Order(rs.getInt("amount"), rs.getDouble("price"), rs.getString("type"), rs.getString("security"), rs.getString("customer"));
-            rs.deleteRow();
+            int matchAmount = Math.min(matchingOrder.getAmount(), order.getAmount());
+            if(matchAmount == matchingOrder.getAmount()){
+                rs.deleteRow();
+            }else{
+                rs.updateInt("amount", matchingOrder.getAmount()-matchAmount);
+                rs.updateRow();
+                matchingOrder.setAmount(matchAmount);
+            }
+            if(matchAmount != order.getAmount()){
+                order.setAmount(order.getAmount()-matchAmount);
+                persistOrder(order);
+            }
         }
         return matchingOrder;
     }

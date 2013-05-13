@@ -40,4 +40,8 @@ public class Order {
     public String getCustomer() {
         return customer;
     }
+
+    public void setAmount(int amount) {
+        this.amount = amount;
+    }
 }
