@@ -149,6 +149,8 @@ public class Market extends HttpServlet {
     }
 
     private void persistTrade(Trade trade) throws SQLException {
+        assert trade.getAmount() >0;
+        assert trade.getPrice() >= 0;
         ps = connection.prepareStatement("INSERT INTO trades(security, price, amount, dt, buyer, seller) VALUES(?,?,?,?,?,?)");
         ps.setString(1, trade.getSecurity());
         ps.setDouble(2, trade.getPrice());
@@ -161,7 +163,8 @@ public class Market extends HttpServlet {
     }
 
     private Order getAndRemoveMatchingOrder(Order order) throws SQLException {
-        ps = connection.prepareStatement("SELECT * FROM orders WHERE (security =? AND type =? AND price =?)", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+        ps = connection.prepareStatement("SELECT * FROM orders WHERE (security =? AND type =? AND price =?) ", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
         ps.setString(1, order.getSecurity());
         ps.setString(2, getOppositeType(order.getBuyOrSell()));
         ps.setDouble(3, order.getPrice());
